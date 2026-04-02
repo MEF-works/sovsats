@@ -31,3 +31,8 @@ npm run typecheck && npm publish --dry-run
 - **README** — Requirements (Node 18+, BTCPay Greenfield); package **entry-point table**; fixed “redirect” wording (navigation via **callbacks**); **POST response** and **GET/poll** field tables; **`useSovSats`** section; **Express** example with **`express.raw` before `express.json()`** for webhooks; `transpilePackages` note for Next monorepos; safer **`cryptoInfo?.find`** example; links to npm, GitHub Pages, issues, **CHANGELOG**.
 - **CHANGELOG.md** — **0.2.0** history + **0.2.1** doc-only entry; shipped in tarball via **`package.json` `files`**.
 - **package.json** — **`homepage`**, **`bugs`**, **`engines.node` >=18**; version bumped to **0.2.1** for publishing doc/metadata updates (registry already had **0.2.0**).
+
+## Git push — 2026-04-02
+
+- Added **`.gitignore`** (`node_modules/`, `dist/`, env files) so GitHub Pages / clones stay clean.
+- Committed package restructure + docs; **`git pull --rebase origin main`** then **`git push origin main`** to **https://github.com/MEF-works/sovsats** (remote was ahead; rebase succeeded).
