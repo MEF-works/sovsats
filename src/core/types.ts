@@ -47,6 +47,9 @@ export interface CryptoRow {
   paymentType?: string;
 }
 
+/** Same fields as {@link CryptoRow}; kept for backwards compatibility. */
+export type BtcpayCryptoRow = CryptoRow;
+
 export type InvoiceStatus =
   | "New"
   | "Processing"
@@ -54,6 +57,11 @@ export type InvoiceStatus =
   | "Expired"
   | "Invalid";
 
+/**
+ * Normalized poll body returned by `pollInvoice()` in this package.
+ * Your GET route may return this JSON or forward Greenfield invoice JSON (camelCase);
+ * `useSovSats` accepts both.
+ */
 export interface PollInvoiceResponse {
   invoiceId: string;
   status: InvoiceStatus;
@@ -72,36 +80,44 @@ export interface WebhookEvent {
 }
 
 export interface SovSatsCallbacks {
-  /** Fires when payment is detected (Processing state) — safe for UX redirect */
+  /** Invoice reached `Processing` — payment seen; use for UX only, not fulfillment. */
   onProcessing?: (invoiceId: string) => void;
-  /** Fires when payment is fully settled — safe for order fulfillment */
+  /** Invoice `Settled` — safe for order fulfillment. */
   onSettled?: (invoiceId: string) => void;
-  /** Fires on any poll or API error */
   onError?: (error: Error) => void;
 }
 
-// ─── React Component Props ───────────────────────────────────────────────────
+// ─── BtcNexusCheckout ─────────────────────────────────────────────────────────
 
 export interface BtcCheckoutProps {
-  /** Invoice ID from your create-invoice endpoint */
+  /** BTCPay Greenfield invoice id. */
   invoiceId: string;
-  /** Your proxy poll endpoint, e.g. /api/payments/btcpay */
+  /**
+   * Base URL of your server route that returns invoice JSON (no trailing slash).
+   * Must respond to `GET {pollEndpoint}/{invoiceId}`.
+   */
   pollEndpoint: string;
-  /** Store/merchant display name */
+  /** Shown in the header; omit to use `NEXT_PUBLIC_STORE_NAME` or hostname from `NEXT_PUBLIC_APP_URL` in Next.js, else `"Store"`. */
   storeName?: string;
-  /** Display total in fiat */
+  /** Fiat total as you want it displayed (e.g. `"$49.99"` or `"49.99 USD"`). */
   usdTotal: string;
-  /** BTC address from invoice */
+  /** On-chain receive address for this payment (e.g. BTC row from `cryptoInfo`). */
   btcAddress: string;
-  /** Exact BTC amount due */
+  /** Exact crypto amount due as a string (e.g. eight decimals for BTC). */
   btcAmount: string;
-  /** bitcoin: URI for deep linking to wallet apps */
+  /** `bitcoin:` URI (or other wallet link) for “Open wallet”. */
   bitcoinUri: string;
-  /** Order ID for display */
+  /** Your order / reference id shown in the UI. */
   orderId: string;
-  /** Poll interval in ms. Default: 5000 */
+  /** Ms between polls after the customer taps “I’ve sent payment”. Default: 5000. */
   pollInterval?: number;
+  /** Optional hooks when status changes (same semantics as settlement table in README). */
   callbacks?: SovSatsCallbacks;
-  /** Show demo simulate button (dev only) */
+  /** If true, shows a dev-only control to simulate confirmation. Never enable in production. */
   dev?: boolean;
+  /**
+   * `embed` (default): full width of the parent, for embedding in your page.
+   * `page`: centered card on a full-viewport dark background (demos / standalone).
+   */
+  layout?: "embed" | "page";
 }

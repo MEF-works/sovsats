@@ -1,18 +1,14 @@
+import { Router } from "express";
 import type { Request, Response } from "express";
-import { createInvoice, pollInvoice, handleWebhook } from "../../src/core";
-import type { SovSatsConfig, CreateInvoiceRequest } from "../../src/core";
+import { createInvoice, pollInvoice, handleWebhook } from "../../core";
+import type { SovSatsConfig, CreateInvoiceRequest } from "../../core";
 
 // ─── Express Adapters ─────────────────────────────────────────────────────────
-// Usage:
-//   import { makeBtcpayRouter } from "sovsats/adapters/express"
-//   app.use("/api/payments/btcpay", makeBtcpayRouter(config))
-
-import { Router } from "express";
+// app.use("/api/payments/btcpay", makeBtcpayRouter(config))
 
 export function makeBtcpayRouter(config: SovSatsConfig) {
   const router = Router();
 
-  // POST /
   router.post("/", async (req: Request, res: Response) => {
     try {
       const body = req.body as CreateInvoiceRequest;
@@ -27,7 +23,6 @@ export function makeBtcpayRouter(config: SovSatsConfig) {
     }
   });
 
-  // GET /:invoiceId
   router.get("/:invoiceId", async (req: Request, res: Response) => {
     try {
       const result = await pollInvoice(config, req.params.invoiceId);
@@ -63,9 +58,7 @@ export function makeWebhookRouter(
       onProcessing: options.onProcessing
         ? (event) => options.onProcessing!(event.invoiceId)
         : undefined,
-      onSettled: options.onSettled
-        ? (event) => options.onSettled!(event.invoiceId)
-        : undefined,
+      onSettled: options.onSettled ? (event) => options.onSettled!(event.invoiceId) : undefined,
     });
 
     if (!result.ok) {

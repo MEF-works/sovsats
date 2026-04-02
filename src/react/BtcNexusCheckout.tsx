@@ -1,14 +1,30 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, type CSSProperties } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSovSats } from "./useSovSats";
 import type { BtcCheckoutProps } from "../core/types";
 
+function defaultStoreLabel(): string {
+  if (typeof process === "undefined" || !process.env) return "Store";
+  const explicit = process.env.NEXT_PUBLIC_STORE_NAME?.trim();
+  if (explicit) return explicit;
+  const base = process.env.NEXT_PUBLIC_APP_URL?.trim();
+  if (base) {
+    try {
+      const host = new URL(base).hostname.replace(/^www\./, "");
+      if (host) return host;
+    } catch {
+      // ignore
+    }
+  }
+  return "Store";
+}
+
 export default function BtcNexusCheckout({
   invoiceId,
   pollEndpoint,
-  storeName = "Merchant",
+  storeName,
   usdTotal,
   btcAddress,
   btcAmount,
@@ -17,12 +33,16 @@ export default function BtcNexusCheckout({
   pollInterval = 5000,
   callbacks,
   dev = false,
+  layout = "embed",
 }: BtcCheckoutProps) {
+  const fiatLabel = usdTotal.trim();
+  const label = storeName?.trim() || defaultStoreLabel();
+
   const [copied, setCopied] = useState(false);
   const [amtCopied, setAmtCopied] = useState(false);
   const [pulseAddr, setPulseAddr] = useState(false);
 
-  const { stage, setStage, startPolling } = useSovSats({
+  const { stage, setStage, startPolling, isPolling } = useSovSats({
     invoiceId,
     pollEndpoint,
     pollInterval,
@@ -30,7 +50,7 @@ export default function BtcNexusCheckout({
   });
 
   const copyAddress = () => {
-    navigator.clipboard.writeText(btcAddress);
+    void navigator.clipboard.writeText(btcAddress);
     setCopied(true);
     setPulseAddr(true);
     setTimeout(() => setCopied(false), 3000);
@@ -38,7 +58,7 @@ export default function BtcNexusCheckout({
   };
 
   const copyAmount = () => {
-    navigator.clipboard.writeText(btcAmount);
+    void navigator.clipboard.writeText(btcAmount);
     setAmtCopied(true);
     setTimeout(() => setAmtCopied(false), 2000);
   };
@@ -54,20 +74,39 @@ export default function BtcNexusCheckout({
 
   const shortAddress = `${btcAddress.slice(0, 10)}...${btcAddress.slice(-6)}`;
 
-  return (
-    <div style={s.root}>
-      <AnimatePresence mode="wait">
+  const waitingSub = isPolling
+    ? "We'll send you to the thank you page as soon as it's detected."
+    : "Starting payment watch…";
 
+  const rootStyle: CSSProperties =
+    layout === "page"
+      ? {
+          minHeight: "100vh",
+          background: "#080808",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: 16,
+          fontFamily: "system-ui, -apple-system, sans-serif",
+        }
+      : {
+          width: "100%",
+          fontFamily: "system-ui, -apple-system, sans-serif",
+        };
+
+  return (
+    <div style={rootStyle}>
+      <AnimatePresence mode="wait">
         {stage === "pay" && (
           <motion.div key="pay" {...fade} style={s.card}>
             <div style={s.header}>
               <div>
                 <p style={s.headerLabel}>PAYING TO</p>
-                <p style={s.storeName}>{storeName}</p>
+                <p style={s.storeName}>{label}</p>
               </div>
               <div style={{ textAlign: "right" }}>
                 <p style={s.headerLabel}>TOTAL</p>
-                <p style={s.headerAmount}>{usdTotal}</p>
+                <p style={s.headerAmount}>{fiatLabel}</p>
               </div>
             </div>
 
@@ -75,7 +114,7 @@ export default function BtcNexusCheckout({
               <div style={s.btcRow}>
                 <span style={s.btcIcon}>₿</span>
                 <span style={s.btcAmt}>{btcAmount} BTC</span>
-                <span style={s.btcNote}>≈ {usdTotal}</span>
+                <span style={s.btcNote}>≈ {fiatLabel}</span>
               </div>
 
               <p style={s.instructions}>
@@ -83,6 +122,7 @@ export default function BtcNexusCheckout({
               </p>
 
               <motion.button
+                type="button"
                 style={{
                   ...s.addressBox,
                   background: pulseAddr ? "#1a0e00" : "#111",
@@ -95,19 +135,23 @@ export default function BtcNexusCheckout({
                   <p style={s.addrLabel}>{copied ? "✓  COPIED!" : "PRESS TO COPY ADDRESS"}</p>
                   <p style={s.addrText}>{btcAddress}</p>
                 </div>
-                <div style={{
-                  ...s.copyChip,
-                  background: copied ? "#1a0e00" : "#1a1a1a",
-                  border: copied ? "1px solid #f7931a" : "1px solid #222",
-                }}>
-                  {copied
-                    ? <span style={{ color: "#f7931a", fontSize: 13 }}>✓</span>
-                    : <CopyIcon />
-                  }
+                <div
+                  style={{
+                    ...s.copyChip,
+                    background: copied ? "#1a0e00" : "#1a1a1a",
+                    border: copied ? "1px solid #f7931a" : "1px solid #222",
+                  }}
+                >
+                  {copied ? (
+                    <span style={{ color: "#f7931a", fontSize: 13 }}>✓</span>
+                  ) : (
+                    <CopyIcon />
+                  )}
                 </div>
               </motion.button>
 
               <motion.button
+                type="button"
                 style={{
                   ...s.amountBox,
                   borderColor: amtCopied ? "#f7931a" : "#1c1c1c",
@@ -119,11 +163,7 @@ export default function BtcNexusCheckout({
                 <span style={s.amountVal}>{btcAmount} BTC</span>
               </motion.button>
 
-              <motion.button
-                style={s.walletBtn}
-                onClick={openWallet}
-                whileTap={{ scale: 0.97 }}
-              >
+              <motion.button type="button" style={s.walletBtn} onClick={openWallet} whileTap={{ scale: 0.97 }}>
                 <WalletIcon />
                 Open My Crypto Wallet
               </motion.button>
@@ -138,17 +178,11 @@ export default function BtcNexusCheckout({
                 <div style={s.divLine} />
               </div>
 
-              <motion.button
-                style={s.sentBtn}
-                onClick={handleSent}
-                whileTap={{ scale: 0.98 }}
-              >
-                I've Sent Payment →
+              <motion.button type="button" style={s.sentBtn} onClick={handleSent} whileTap={{ scale: 0.98 }}>
+                I&apos;ve Sent Payment →
               </motion.button>
 
-              <p style={s.footNote}>
-                Send exactly {btcAmount} BTC · Do not send from an exchange
-              </p>
+              <p style={s.footNote}>Send exactly {btcAmount} BTC · Do not send from an exchange</p>
             </div>
           </motion.div>
         )}
@@ -162,7 +196,7 @@ export default function BtcNexusCheckout({
                 style={s.spinner}
               />
               <p style={s.waitTitle}>Watching for your payment</p>
-              <p style={s.waitSub}>We'll send you to the thank you page as soon as it's detected.</p>
+              <p style={s.waitSub}>{waitingSub}</p>
 
               <div style={s.summaryCard}>
                 <SRow label="Order" val={orderId} />
@@ -173,7 +207,7 @@ export default function BtcNexusCheckout({
               <p style={s.waitNote}>Keep this page open. Confirmation happens automatically.</p>
 
               {dev && (
-                <button style={s.demoBtn} onClick={() => setStage("done")}>
+                <button type="button" style={s.demoBtn} onClick={() => setStage("done")}>
                   [DEV] Simulate Confirmation
                 </button>
               )}
@@ -196,7 +230,7 @@ export default function BtcNexusCheckout({
               </motion.div>
               <p style={s.doneTitle}>Payment Confirmed</p>
               <p style={s.doneSub}>{orderId}</p>
-              <p style={s.doneAmt}>{usdTotal}</p>
+              <p style={s.doneAmt}>{fiatLabel}</p>
             </div>
           </motion.div>
         )}
@@ -206,13 +240,12 @@ export default function BtcNexusCheckout({
             <div style={s.doneBody}>
               <p style={{ ...s.doneTitle, color: "#555" }}>Invoice Expired</p>
               <p style={s.waitSub}>This payment window has closed.</p>
-              <button style={s.demoBtn} onClick={() => setStage("pay")}>
+              <button type="button" style={s.demoBtn} onClick={() => setStage("pay")}>
                 Start Over
               </button>
             </div>
           </motion.div>
         )}
-
       </AnimatePresence>
     </div>
   );
@@ -255,19 +288,11 @@ const fade = {
   transition: { duration: 0.2 },
 };
 
-const s: Record<string, React.CSSProperties> = {
-  root: {
-    minHeight: "100vh",
-    background: "#080808",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 16,
-    fontFamily: "system-ui, -apple-system, sans-serif",
-  },
+const s: Record<string, CSSProperties> = {
   card: {
     width: "100%",
     maxWidth: 420,
+    margin: "0 auto",
     background: "#0d0d0d",
     border: "1px solid #1c1c1c",
     borderRadius: 18,
@@ -296,8 +321,8 @@ const s: Record<string, React.CSSProperties> = {
   },
   btcIcon: { fontSize: 16, color: "#f7931a" },
   btcAmt: { fontSize: 15, color: "#fff", fontWeight: 600, fontFamily: "monospace" },
-  btcNote: { fontSize: 12, color: "#3a3a3a", marginLeft: "auto" },
-  instructions: { fontSize: 13, color: "#4a4a4a", margin: "0 0 14px", lineHeight: 1.6 },
+  btcNote: { fontSize: 12, color: "rgba(255,255,255,0.45)", marginLeft: "auto" },
+  instructions: { fontSize: 13, color: "rgba(255,255,255,0.88)", margin: "0 0 14px", lineHeight: 1.6 },
   addressBox: {
     width: "100%",
     border: "1px solid #222",
@@ -340,7 +365,7 @@ const s: Record<string, React.CSSProperties> = {
     boxSizing: "border-box",
     transition: "border-color 0.25s",
   },
-  amountLabel: { fontSize: 9, color: "#444", letterSpacing: 2, fontFamily: "monospace" },
+  amountLabel: { fontSize: 9, color: "rgba(255,255,255,0.72)", letterSpacing: 2, fontFamily: "monospace" },
   amountVal: { fontSize: 14, color: "#f7931a", fontFamily: "monospace", fontWeight: 600 },
   walletBtn: {
     width: "100%",
@@ -359,24 +384,24 @@ const s: Record<string, React.CSSProperties> = {
     marginBottom: 8,
     boxSizing: "border-box",
   },
-  walletHint: { fontSize: 11, color: "#2e2e2e", textAlign: "center", margin: "0 0 18px", lineHeight: 1.5 },
+  walletHint: { fontSize: 11, color: "rgba(255,255,255,0.5)", textAlign: "center", margin: "0 0 18px", lineHeight: 1.5 },
   divider: { display: "flex", alignItems: "center", gap: 10, margin: "0 0 14px" },
-  divLine: { flex: 1, height: 1, background: "#181818" },
-  divText: { fontSize: 9, color: "#2e2e2e", letterSpacing: 2, whiteSpace: "nowrap" },
+  divLine: { flex: 1, height: 1, background: "rgba(255,255,255,0.18)" },
+  divText: { fontSize: 9, color: "rgba(255,255,255,0.55)", letterSpacing: 2, whiteSpace: "nowrap" },
   sentBtn: {
     width: "100%",
     background: "#22c55e",
-    border: "none",
+    border: "1px solid #16a34a",
     borderRadius: 12,
     padding: "14px",
     fontSize: 14,
-    fontWeight: 700,
-    color: "#000",
+    fontWeight: 600,
+    color: "#fff",
     cursor: "pointer",
     marginBottom: 14,
     boxSizing: "border-box",
   },
-  footNote: { fontSize: 11, color: "#272727", textAlign: "center", lineHeight: 1.6 },
+  footNote: { fontSize: 11, color: "rgba(255,255,255,0.62)", textAlign: "center", lineHeight: 1.6 },
   waitBody: { display: "flex", flexDirection: "column", alignItems: "center", padding: "36px 20px 28px" },
   spinner: {
     width: 36,

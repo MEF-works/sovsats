@@ -2,9 +2,10 @@ import type {
   SovSatsConfig,
   CreateInvoiceRequest,
   CreateInvoiceResponse,
-  InvoiceStatus,
+  CryptoRow,
 } from "./types";
 import { normalizeCryptoFromInvoice, normalizePaymentMethods } from "./normalize";
+import { normalizeInvoiceStatus } from "./invoice-status";
 
 // ─── Create Invoice ───────────────────────────────────────────────────────────
 // Pure function — no framework deps. Call from any server-side handler.
@@ -13,12 +14,7 @@ export async function createInvoice(
   config: SovSatsConfig,
   req: CreateInvoiceRequest
 ): Promise<CreateInvoiceResponse> {
-  const {
-    btcpayUrl,
-    storeId,
-    apiKey,
-    speedPolicy = "HighSpeed",
-  } = config;
+  const { btcpayUrl, storeId, apiKey, speedPolicy = "HighSpeed" } = config;
 
   const {
     amount,
@@ -49,17 +45,14 @@ export async function createInvoice(
     (body.metadata as Record<string, unknown>).buyerEmail = customerEmail;
   }
 
-  const res = await fetch(
-    `${btcpayUrl}/api/v1/stores/${storeId}/invoices`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `token ${apiKey}`,
-      },
-      body: JSON.stringify(body),
-    }
-  );
+  const res = await fetch(`${btcpayUrl}/api/v1/stores/${storeId}/invoices`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `token ${apiKey}`,
+    },
+    body: JSON.stringify(body),
+  });
 
   if (!res.ok) {
     const text = await res.text().catch(() => "");
@@ -69,12 +62,10 @@ export async function createInvoice(
   const invoice = (await res.json()) as Record<string, unknown>;
   const invoiceId = invoice.id as string;
   const checkoutLink = (invoice.checkoutLink as string) || "";
-  const status = (invoice.status as InvoiceStatus) || "New";
+  const status = normalizeInvoiceStatus(invoice.status);
 
-  // Try to get crypto info from invoice body first
   let cryptoInfo = normalizeCryptoFromInvoice(invoice);
 
-  // Fallback: fetch payment methods separately (BTCPay lazy mode)
   if (cryptoInfo.length === 0) {
     cryptoInfo = await fetchPaymentMethods(config, invoiceId);
   }
@@ -87,7 +78,7 @@ export async function createInvoice(
 export async function fetchPaymentMethods(
   config: SovSatsConfig,
   invoiceId: string
-): Promise<import("./types").CryptoRow[]> {
+): Promise<CryptoRow[]> {
   const { btcpayUrl, storeId, apiKey } = config;
 
   const res = await fetch(

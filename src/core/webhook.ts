@@ -27,7 +27,6 @@ export async function verifyWebhookSignature(
       .map((b) => b.toString(16).padStart(2, "0"))
       .join("");
 
-    // BTCPay sends "sha256=<hash>" or just "<hash>"
     const expected = signatureHeader.replace(/^sha256=/, "");
     return hashHex === expected;
   } catch {
@@ -37,11 +36,8 @@ export async function verifyWebhookSignature(
 
 export interface WebhookHandlerOptions {
   secret: string;
-  /** Called when payment is processing (1+ confirmations depending on speedPolicy) */
   onProcessing?: (event: WebhookEvent) => Promise<void> | void;
-  /** Called when invoice is fully settled */
   onSettled?: (event: WebhookEvent) => Promise<void> | void;
-  /** Called on any webhook event — for logging, custom logic */
   onAny?: (event: WebhookEvent) => Promise<void> | void;
 }
 
@@ -52,7 +48,6 @@ export async function handleWebhook(
 ): Promise<{ ok: boolean; reason?: string }> {
   const { secret, onProcessing, onSettled, onAny } = options;
 
-  // Verify signature
   const valid = await verifyWebhookSignature(rawBody, signatureHeader, secret);
   if (!valid) {
     return { ok: false, reason: "Invalid signature" };
@@ -65,7 +60,6 @@ export async function handleWebhook(
     return { ok: false, reason: "Invalid JSON" };
   }
 
-  // Fire callbacks
   if (onAny) await onAny(event);
 
   if (event.type === "InvoiceProcessing" && onProcessing) {

@@ -1,18 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createInvoice, pollInvoice, handleWebhook } from "../../src/core";
-import type { SovSatsConfig, CreateInvoiceRequest } from "../../src/core";
+import { createInvoice, pollInvoice, handleWebhook } from "../../core";
+import type { SovSatsConfig, CreateInvoiceRequest } from "../../core";
 
 // ─── Next.js App Router Adapters ──────────────────────────────────────────────
-// Usage: re-export these from your app/api/payments/btcpay/ route files.
-//
 // app/api/payments/btcpay/route.ts:
 //   export { POST } from "sovsats/adapters/next"
-//
 // app/api/payments/btcpay/[invoiceId]/route.ts:
 //   export { GET } from "sovsats/adapters/next"
-//
 // app/api/webhooks/btcpay/route.ts:
-//   export { WEBHOOK } from "sovsats/adapters/next"
+//   export const POST = makeWebhookHandler({ ... })
 
 function getConfig(): SovSatsConfig {
   const btcpayUrl = process.env.BTCPAY_SERVER_URL;
@@ -21,15 +17,12 @@ function getConfig(): SovSatsConfig {
   const webhookSecret = process.env.BTCPAY_WEBHOOK_SECRET;
 
   if (!btcpayUrl || !storeId || !apiKey) {
-    throw new Error(
-      "Missing required env vars: BTCPAY_SERVER_URL, BTCPAY_STORE_ID, BTCPAY_API_KEY"
-    );
+    throw new Error("Missing required env vars: BTCPAY_SERVER_URL, BTCPAY_STORE_ID, BTCPAY_API_KEY");
   }
 
   return { btcpayUrl, storeId, apiKey, webhookSecret };
 }
 
-// POST /api/payments/btcpay
 export async function POST(req: NextRequest) {
   try {
     const config = getConfig();
@@ -47,14 +40,15 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// GET /api/payments/btcpay/[invoiceId]
 export async function GET(
   _req: NextRequest,
-  { params }: { params: { invoiceId: string } }
+  { params }: { params: Promise<{ invoiceId: string }> | { invoiceId: string } }
 ) {
   try {
     const config = getConfig();
-    const result = await pollInvoice(config, params.invoiceId);
+    const p = await Promise.resolve(params);
+    const invoiceId = p.invoiceId;
+    const result = await pollInvoice(config, invoiceId);
     return NextResponse.json(result);
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Unknown error";
@@ -62,12 +56,11 @@ export async function GET(
   }
 }
 
-// POST /api/webhooks/btcpay
 export function makeWebhookHandler(options: {
   onProcessing?: (invoiceId: string) => Promise<void>;
   onSettled?: (invoiceId: string) => Promise<void>;
 }) {
-  return async function WEBHOOK(req: NextRequest) {
+  return async function POST(req: NextRequest) {
     try {
       const config = getConfig();
       if (!config.webhookSecret) {
@@ -82,9 +75,7 @@ export function makeWebhookHandler(options: {
         onProcessing: options.onProcessing
           ? (event) => options.onProcessing!(event.invoiceId)
           : undefined,
-        onSettled: options.onSettled
-          ? (event) => options.onSettled!(event.invoiceId)
-          : undefined,
+        onSettled: options.onSettled ? (event) => options.onSettled!(event.invoiceId) : undefined,
       });
 
       if (!result.ok) {
