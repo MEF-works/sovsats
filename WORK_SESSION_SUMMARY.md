@@ -48,6 +48,10 @@ npm run typecheck && npm publish --dry-run
 - **`github.com/MEF-works`** is a **personal username** (not a GitHub Organization). Repo: **`MEF-works/sovsats`**.
 - **`package.json` `homepage`** and README “Site” point to **`https://sovsats.com/`** (canonical landing). GitHub Pages remains optional hosting behind that domain.
 
+## Git push — 2026-04-03
+
+- Pushed **`docs/index.html`** updates (demo/phone copy, no `PLACE_FILES_HERE` on-page) — **`bff6411`** on **`main`**.
+
 ## Git push — 2026-04-02
 
 - Added **`.gitignore`** (`node_modules/`, `dist/`, env files) so GitHub Pages / clones stay clean.
