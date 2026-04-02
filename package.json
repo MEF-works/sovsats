@@ -6,11 +6,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mefworks/sovsats.git"
+    "url": "git+https://github.com/MEF-works/sovsats.git"
   },
-  "homepage": "https://mefworks.github.io/sovsats/",
+  "homepage": "https://sovsats.com/",
   "bugs": {
-    "url": "https://github.com/mefworks/sovsats/issues"
+    "url": "https://github.com/MEF-works/sovsats/issues"
   },
   "engines": {
     "node": ">=18"

@@ -1,0 +1,19 @@
+Put your real checkout media in this folder (these exact filenames are what index.html loads):
+
+  checkout-mobile.png
+    Portrait screenshot for the hero phone. Tip: crop to the phone UI only, ~9:16 or similar.
+
+  checkout-demo.mp4
+    Screen recording (H.264). Works in Safari, Chrome, Edge, Firefox.
+
+  checkout-demo.webm
+    Optional second source; often smaller than MP4 for Chrome/Firefox.
+
+  checkout-video-poster.jpg
+    Optional still image shown before the video plays (first frame or marketing shot).
+
+For the GitHub / npm README image, also save a representative shot as:
+
+  ../preview.png   (one level up, next to index.html)
+
+Commit and push; GitHub Pages serves everything under /docs/.

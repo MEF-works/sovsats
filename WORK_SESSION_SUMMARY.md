@@ -32,6 +32,22 @@ npm run typecheck && npm publish --dry-run
 - **CHANGELOG.md** — **0.2.0** history + **0.2.1** doc-only entry; shipped in tarball via **`package.json` `files`**.
 - **package.json** — **`homepage`**, **`bugs`**, **`engines.node` >=18**; version bumped to **0.2.1** for publishing doc/metadata updates (registry already had **0.2.0**).
 
+## Media for the website
+
+- Put files in **`docs/assets/`** with the names in **`docs/assets/PLACE_FILES_HERE.txt`** (`checkout-mobile.png`, `checkout-demo.mp4`, optional `.webm` + poster).
+- **`docs/preview.png`** — image for README / npm (copy or export a representative frame).
+
+## docs/index.html (marketing site)
+
+- GitHub links already target **`https://github.com/MEF-works/sovsats`**; npm → **`https://www.npmjs.com/package/sovsats`**; footer profile **`https://github.com/MEF-works`**.
+- Added **`canonical`** + **`og:url`** → **`https://sovsats.com/`** for the custom domain.
+- Code sample updated to **`import { BtcNexusCheckout }`**, **`buildBitcoinUri`**, and required props **`bitcoinUri`** / **`orderId`** (matches package API).
+
+## URLs — personal GitHub, custom domain
+
+- **`github.com/MEF-works`** is a **personal username** (not a GitHub Organization). Repo: **`MEF-works/sovsats`**.
+- **`package.json` `homepage`** and README “Site” point to **`https://sovsats.com/`** (canonical landing). GitHub Pages remains optional hosting behind that domain.
+
 ## Git push — 2026-04-02
 
 - Added **`.gitignore`** (`node_modules/`, `dist/`, env files) so GitHub Pages / clones stay clean.

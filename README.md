@@ -7,7 +7,9 @@ No Stripe. No PayPal. No getting banned. Sovereign by design.
 
 ![SovSats Checkout](./docs/preview.png)
 
-**[npm](https://www.npmjs.com/package/sovsats)** · **[Site](https://mefworks.github.io/sovsats/)** · **[Issues](https://github.com/mefworks/sovsats/issues)** · **[Changelog](./CHANGELOG.md)**
+*Use a representative screenshot as `docs/preview.png` for npm/GitHub. The [landing page](https://sovsats.com/) hero loads `docs/assets/checkout-mobile.png` (see `docs/assets/PLACE_FILES_HERE.txt`).*
+
+**[npm](https://www.npmjs.com/package/sovsats)** · **[Site](https://sovsats.com/)** · **[Issues](https://github.com/MEF-works/sovsats/issues)** · **[Changelog](./CHANGELOG.md)**
 
 ---
 
@@ -303,4 +305,4 @@ Merchants in high-touch or restricted categories who already use or plan to use 
 
 MIT — see [LICENSE](./LICENSE).
 
-Built by [MEFworks](https://github.com/mefworks). Powered by [BTCPay Server](https://btcpayserver.org).
+Built by [MEFworks](https://github.com/MEF-works). Powered by [BTCPay Server](https://btcpayserver.org).
