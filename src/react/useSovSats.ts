@@ -16,6 +16,10 @@ export interface UseSovSatsOptions {
   /** Interval between polls in ms. Default: 5000 */
   pollInterval?: number;
   callbacks?: SovSatsCallbacks;
+  /** When true, skip internal polling; host supplies {@link externalIsPolling} for UI. */
+  deferPollingToParent?: boolean;
+  /** When deferring, whether the host is actively polling. */
+  externalIsPolling?: boolean;
 }
 
 export interface UseSovSatsReturn {
@@ -85,6 +89,8 @@ export function useSovSats({
   pollEndpoint,
   pollInterval = 5000,
   callbacks,
+  deferPollingToParent = false,
+  externalIsPolling = false,
 }: UseSovSatsOptions): UseSovSatsReturn {
   const [stage, setStage] = useState<CheckoutStage>("pay");
   const [isPolling, setIsPolling] = useState(false);
@@ -154,18 +160,21 @@ export function useSovSats({
   }, [invoiceId, pollEndpoint, stopPolling]);
 
   const startPolling = useCallback(() => {
+    if (deferPollingToParent) return;
     if (intervalRef.current) return;
     setIsPolling(true);
     void poll();
     intervalRef.current = setInterval(() => void poll(), pollInterval);
-  }, [poll, pollInterval]);
+  }, [deferPollingToParent, poll, pollInterval]);
 
   useEffect(() => () => stopPolling(), [stopPolling]);
+
+  const pollingUi = deferPollingToParent ? externalIsPolling : isPolling;
 
   return {
     stage,
     setStage,
-    isPolling,
+    isPolling: pollingUi,
     cryptoInfo,
     error,
     startPolling,

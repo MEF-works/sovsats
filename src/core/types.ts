@@ -120,4 +120,12 @@ export interface BtcCheckoutProps {
    * `page`: centered card on a full-viewport dark background (demos / standalone).
    */
   layout?: "embed" | "page";
+  /**
+   * When true, the component does not start its own poll interval after “I’ve sent payment”;
+   * the host should poll `{pollEndpoint}/{invoiceId}` and handle `onProcessing` / `onSettled` there.
+   * Pair with {@link externalIsPolling} for the waiting-state UI.
+   */
+  deferPollingToParent?: boolean;
+  /** When `deferPollingToParent` is true, whether the host is currently polling (spinner copy). */
+  externalIsPolling?: boolean;
 }

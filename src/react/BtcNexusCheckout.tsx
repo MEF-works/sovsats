@@ -34,6 +34,8 @@ export default function BtcNexusCheckout({
   callbacks,
   dev = false,
   layout = "embed",
+  deferPollingToParent = false,
+  externalIsPolling = false,
 }: BtcCheckoutProps) {
   const fiatLabel = usdTotal.trim();
   const label = storeName?.trim() || defaultStoreLabel();
@@ -47,6 +49,8 @@ export default function BtcNexusCheckout({
     pollEndpoint,
     pollInterval,
     callbacks,
+    deferPollingToParent,
+    externalIsPolling,
   });
 
   const copyAddress = () => {
