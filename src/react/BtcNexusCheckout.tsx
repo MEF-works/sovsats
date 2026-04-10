@@ -186,7 +186,7 @@ export default function BtcNexusCheckout({
                 I&apos;ve Sent Payment →
               </motion.button>
 
-              <p style={s.footNote}>Send exactly {btcAmount} BTC · Do not send from an exchange</p>
+              <p style={s.footNote}>Send exactly {btcAmount} BTC</p>
             </div>
           </motion.div>
         )}
