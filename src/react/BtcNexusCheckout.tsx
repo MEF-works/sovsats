@@ -122,7 +122,7 @@ export default function BtcNexusCheckout({
               </div>
 
               <p style={s.instructions}>
-                Open your Bitcoin wallet and send the exact amount to this address:
+                Open your Bitcoin wallet and send to this address. Your BTC total is shown above — tap to copy anytime.
               </p>
 
               <motion.button
@@ -186,7 +186,7 @@ export default function BtcNexusCheckout({
                 I&apos;ve Sent Payment →
               </motion.button>
 
-              <p style={s.footNote}>Send exactly {btcAmount} BTC</p>
+              <p style={s.footNote}>Order total · {btcAmount} BTC</p>
             </div>
           </motion.div>
         )}
