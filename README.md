@@ -7,7 +7,7 @@ No Stripe. No PayPal. No getting banned. Sovereign by design.
 
 ![SovSats Checkout](./docs/preview.png)
 
-*Use a representative screenshot as `docs/preview.png` for npm/GitHub. The [landing page](https://sovsats.com/) hero loads `docs/assets/checkout-mobile.png` (see `docs/assets/PLACE_FILES_HERE.txt`).*
+
 
 **[npm](https://www.npmjs.com/package/sovsats)** · **[Site](https://sovsats.com/)** · **[Issues](https://github.com/MEF-works/sovsats/issues)** · **[Changelog](./CHANGELOG.md)**
 

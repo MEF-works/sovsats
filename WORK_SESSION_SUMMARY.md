@@ -14,7 +14,8 @@ Not modified in this pass (per request). When you wire mgmalkz to npm **`sovsats
 
 ## Version
 
-**0.2.0** — breaking vs 0.1.x (removed defer/label/snake_case poll handling).
+- **0.2.0** — on npm today; breaking vs 0.1.x (removed defer/label/snake_case poll handling).
+- **0.2.1** — current **`package.json`**; doc/metadata + package layout (not yet on npm until you publish).
 
 ## Verify
 
@@ -24,7 +25,8 @@ npm run typecheck && npm publish --dry-run
 
 ## Published (npm)
 
-**sovsats@0.2.0** published to the public registry (`npm publish`). Install: `npm install sovsats`.
+- **sovsats@0.2.0** — live. Install: `npm install sovsats@0.2.0` or range that resolves to it.
+- **sovsats@0.2.1** — publish from your machine (see below). Then: `npm install sovsats@^0.2.1`.
 
 ## Documentation pass — 2026-04-02
 
@@ -56,3 +58,10 @@ npm run typecheck && npm publish --dry-run
 
 - Added **`.gitignore`** (`node_modules/`, `dist/`, env files) so GitHub Pages / clones stay clean.
 - Committed package restructure + docs; **`git pull --rebase origin main`** then **`git push origin main`** to **https://github.com/MEF-works/sovsats** (remote was ahead; rebase succeeded).
+
+## npm publish — sovsats@0.2.1
+
+- **`npm publish --dry-run`** from **`h:\sovsats`** succeeds (typecheck + build + pack **sovsats@0.2.1**).
+- **Cursor / CI shells here are not `npm login`’d** (`npm whoami` → **401**), so **`npm publish`** must run **on your PC** as the **`sovsats` owner**.
+- **Commands:** `cd h:\sovsats` → **`npm whoami`** (expect your npm username) → **`npm login`** if needed → **`npm publish`**. With 2FA, use an npm **automation** / **Granular Access Token** with publish permission if the CLI prompts for OTP.
+- After publish: **`npm view sovsats version`** should show **0.2.1** (or set **`npm dist-tag add sovsats@0.2.1 latest`** if `latest` did not move).
